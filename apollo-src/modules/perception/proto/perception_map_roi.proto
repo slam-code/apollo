@@ -1,0 +1,45 @@
+syntax = "proto2";
+
+package apollo.perception;
+
+import "modules/common/proto/header.proto";
+import "modules/map/proto/map.proto";
+
+// Temporary proto for map ROI used in perception module.
+// Will be deprecated once the HOI map is ready.
+// Next id: 9
+
+//地图感知信息
+message PerceptionMapROI {
+  optional apollo.common.Header header = 1;  // Header.
+  optional apollo.hdmap.Header hdmap_header = 8;  // HDMap header.
+
+  // Minimum x and y values in the map.
+  //地图xy方向最小值
+  optional double origin_x = 2;
+  optional double origin_y = 3;
+
+  // Partition the map into cells of grid.
+  //将地图均匀分割为小网格表示。
+  //网格大小是grid_size，以米为单位。
+  //num_rows是x方向网格数量。num_columns是y方向网格数量
+
+  optional double grid_size = 4;  // in meters.
+  optional int32 num_rows = 5;  // repsect to x.
+  optional int32 num_columns = 6;  // respect to y.
+
+  // ROI regions on the grid.
+  // 特定区域的位置描述.[x0,x1],[y0,y1]
+  message Region {
+    optional int32 start_x = 1;
+    optional int32 end_x = 2;
+    optional int32 start_y = 3;
+    optional int32 end_y = 4;
+
+    // Minimum distance to the road, in meters.
+    //路沿距离
+    optional int32 extension_distance = 5;
+  }
+  //多个特点区域。
+  repeated Region region = 7;
+}

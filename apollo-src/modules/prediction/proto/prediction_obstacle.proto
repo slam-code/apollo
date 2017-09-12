@@ -1,0 +1,44 @@
+syntax = "proto2";
+
+package apollo.prediction;
+
+import "modules/common/proto/error_code.proto";
+import "modules/common/proto/header.proto";
+import "modules/perception/proto/perception_obstacle.proto";
+
+// 预测的障碍物轨迹节点，[x,y,z]表示位置,velocity表示速度 m/s.
+message TrajectoryPoint {
+  optional double x = 1;  // x,y,z表示轨迹point位置，单位是m。in meters.
+  optional double y = 2;  // in meters.
+  optional double z = 3;  // height in meters.
+  optional double velocity = 4;  // 速度 velocity, in meters / second
+  // in seconds, relative to the time_stamp of this message:
+  //     t = t_this_state - t_timestamp
+  optional double t = 5; //节点point距离message发布的时间
+  optional double heading = 6; // head角。heading in angle
+}
+
+//以概率表示的轨迹节点
+message Trajectory {
+  optional double probability = 1;  // probability of this trajectory
+  repeated TrajectoryPoint trajectory_point = 2;//多个轨迹节点point
+}
+
+//预测障碍物信息
+message PredictionObstacle {
+  //障碍物描述子
+  optional apollo.perception.PerceptionObstacle perception_obstacle = 1;
+  optional double time_stamp = 2;  //以GPS计算的时间 GPS time in seconds
+  // the length of the time for this prediction (e.g. 10s)
+  optional double predicted_period = 3;//预测持续时间段
+  // can have multiple trajectories per obstacle
+  repeated Trajectory trajectory = 4;//轨迹节点
+}
+
+message PredictionObstacles {
+  optional apollo.common.Header header = 1;  // timestamp is included in header
+  // make prediction for multiple obstacles
+  repeated PredictionObstacle prediction_obstacle = 2;//多个预测的障碍物，以概率表示
+  // perception error code
+  optional apollo.common.ErrorCode perception_error_code = 3;//预测错误码
+}

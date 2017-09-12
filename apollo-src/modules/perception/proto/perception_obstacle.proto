@@ -1,0 +1,61 @@
+syntax = "proto2";
+
+package apollo.perception;
+
+import "modules/common/proto/error_code.proto";
+import "modules/common/proto/header.proto";
+
+//point是感知的三维点。三维坐标xyz单位是m。
+//如何感知Point？APollo没有给出。个人估计是激光雷达+VIO视觉算法(单目.双目.深度相机)
+message Point {
+  optional double x = 1;  // in meters.
+  optional double y = 2;  // in meters.
+  optional double z = 3;  // height in meters.
+}
+
+//障碍物描述信息。
+//
+message PerceptionObstacle {
+  optional int32 id = 1;  // obstacle ID.障碍物标识id
+  optional Point position = 2;  // obstacle position in the world coordinate
+                                // system.障碍物坐标
+
+  optional double theta = 3;  // 障碍物head角，heading in the world coordinate system.
+  optional Point velocity = 4;  // 障碍物移动速度。obstacle velocity.
+
+  // Size of obstacle bounding box.
+  //障碍物的AABB描述子
+  optional double length = 5;  // obstacle length.
+  optional double width = 6;  // obstacle width.
+  optional double height = 7;  // obstacle height.
+
+  //障碍物的角点
+  repeated Point polygon_point = 8;  // obstacle corner points.
+  //持续时间
+  // duration of an obstacle since detection in s.
+  optional double tracking_time = 9;
+
+  //障碍物类型
+  enum Type {
+    UNKNOWN = 0;
+    UNKNOWN_MOVABLE = 1;
+    UNKNOWN_UNMOVABLE = 2;
+    PEDESTRIAN = 3;  // Pedestrian, usually determined by moving behaviour.
+    BICYCLE = 4;  // bike, motor bike
+    VEHICLE = 5;  // Passenger car or truck.
+  };
+  optional Type type = 10;  // obstacle type
+  //测量时间
+  optional double timestamp = 11;  // GPS time in seconds.
+
+  // Just for offline debuging, onboard will not fill this field.
+  // Format like : [x0, y0, z0, x1, y1, z1...]
+  repeated double point_cloud = 12 [packed = true];
+}
+
+//障碍物集合
+message PerceptionObstacles {
+  repeated PerceptionObstacle perception_obstacle = 1;  // An array of obstacles
+  optional apollo.common.Header header = 2;  // Header
+  optional apollo.common.ErrorCode error_code = 3 [default = OK];
+}
